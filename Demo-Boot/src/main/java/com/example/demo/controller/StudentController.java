@@ -28,8 +28,7 @@ public class StudentController {
 	@PostMapping("/save")
 	public StudentResponse saveStudent(@RequestBody Student student) {
 		try {
-			int x=10/0;
-			logger.info("Ïnside save Controler");
+			logger.info("Inside save Controler");
 			Map<String, Object> map = new HashMap<>();
 			if (student.getStudentId() == null) {
 				student = studentRepository.save(student);
@@ -56,7 +55,6 @@ public class StudentController {
 			return new StudentResponse(2000, "Student retrived Successfully", studentList);
 			
 		}catch(Exception e){
-			
 			e.printStackTrace();
 			throw e;
 		}
