@@ -1,5 +1,12 @@
 package com.example.security;
 
+import static com.example.security.ApplicationUserRole.ADMIN;
+import static com.example.security.ApplicationUserRole.ADMIN_TRAINEE;
+import static com.example.security.ApplicationUserRole.STUDENT;
+
+import java.util.concurrent.TimeUnit;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -11,8 +18,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-
-import static com.example.security.ApplicationUserRole.*;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -20,6 +26,9 @@ import static com.example.security.ApplicationUserRole.*;
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private UserDetailsService userDetailsService;
 
     public ApplicationSecurityConfig(PasswordEncoder passwordEncoder) {
         this.passwordEncoder = passwordEncoder;
@@ -50,8 +59,7 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http
-                .csrf().disable()
+        http.csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(STUDENT.name())
@@ -61,6 +69,19 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .formLogin()
                 .loginPage("/login")
                 .permitAll()
-                .defaultSuccessUrl("/courses", true);
+                .defaultSuccessUrl("/courses", true)
+                .and()
+                .rememberMe().userDetailsService(userDetailsService)
+	                .tokenValiditySeconds((int)TimeUnit.DAYS.toSeconds(21))
+	                .key("somethingverysecure") // By default 2 weeks validity
+	            .and()
+	            .logout()
+	            	.logoutUrl("/logout")
+	            	// we can delete when CSRF will be disable
+	            	.logoutRequestMatcher(new AntPathRequestMatcher("/logout", "GET")) 
+	            	.invalidateHttpSession(true)
+	            	.clearAuthentication(true)
+	            	.deleteCookies("JSESSIONID","remember-me") // name are taken from cookie
+	            	.logoutSuccessUrl("/login");
     }
 }
