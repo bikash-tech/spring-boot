@@ -4,16 +4,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-//@RequestMapping("/")
+@RequestMapping("/")
 public class TemplateController {
 
-	@RequestMapping("/login")
+	@RequestMapping("login")
 	public String getLogin() {
+		System.out.println("login page calling...");
 		return "login";
 	}
 
-	@RequestMapping("/courses")
+	@RequestMapping("courses")
 	public String getCourses() {
+		System.out.println("courses page calling....");
 		return "courses";
 	}
 }
